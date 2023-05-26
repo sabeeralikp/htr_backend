@@ -1,0 +1,10 @@
+venv/
+db.sqlite3
+core/__pycache__/
+htr/__pycache__/
+htr/migrations/__pycache__/
+htr/migrations/0001_initial.py
+htr_api/__pycache__/
+htr_api/migrations/__pycache__/
+media/
+htr_api/model/
