@@ -1,3 +1,25 @@
+"""
+The module contains definitions related to a Transformer model for handwritten text recognition.
+
+This module includes the following components:
+- `PositionalEncoding`: A module that applies positional encoding to the input tensor.
+- `count_parameters`: A function that counts the number of trainable parameters in a model.
+- `TransformerModel`: A class that defines the Transformer model for handwritten text recognition.
+- `process_image`: A function that preprocesses an image for input to the model.
+- `labels_to_text`: A function that converts a sequence of label indices to a string.
+- `prediction`: A function that generates a prediction for an input image using the model.
+- `char_error_rate`: A function that calculates the character error rate between two sequences.
+- `test`: A function that performs testing and evaluation on a dataset.
+- `pred_with_image`: A function that generates a prediction for an input image.
+
+Note:
+- The `TransformerModel` class assumes the presence of packages like:
+    `torch`, `torch.nn`, `torchvision`, `math`, `os`, `cv2`, `numpy`, `string`, and `editdistance`.
+- The module also assumes the availability of a trained model file and necessary data files.
+- The provided code includes various utility functions and dependencies required for handwritten text recognition.
+- Additional documentation and usage examples for individual functions and classes can be found within the code.
+"""
+
 import torch
 from torch.cuda import is_available
 import torch.nn as nn
@@ -11,7 +33,16 @@ import editdistance
 
 
 class PositionalEncoding(nn.Module):
-    def __init__(self, d_model, dropout=0.1, max_len=5000):
+    """
+    Positional encoding for transformer models.
+
+    Args:
+        d_model (int): The dimension of the input features.
+        dropout (float, optional): Dropout rate to apply to the encoded features (default: 0.1).
+        max_len (int, optional): The maximum length of the input sequence (default: 5000).
+    """
+
+    def __init__(self, d_model: int, dropout: float = 0.1, max_len: int = 5000) -> None:
         super(PositionalEncoding, self).__init__()
         self.dropout = nn.Dropout(p=dropout)
         self.scale = nn.Parameter(torch.ones(1))
@@ -26,28 +57,50 @@ class PositionalEncoding(nn.Module):
         pe = pe.unsqueeze(0).transpose(0, 1)
         self.register_buffer("pe", pe)
 
-    def forward(self, x):
+    def forward(self, x: any) -> any:
         x = x + self.scale * self.pe[: x.size(0), :]
         return self.dropout(x)
 
 
-def count_parameters(model):
+def count_parameters(model: any) -> any:
+    """
+    Count the total number of trainable parameters in a given model.
+
+    Args:
+        model (torch.nn.Module): The model to count the parameters for.
+
+    Returns:
+        int: The total number of trainable parameters in the model.
+    """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 
 class TransformerModel(nn.Module):
+    """
+    Transformer-based model for a specific task.
+
+    Args:
+        bb_name (str): Name of the backbone model, e.g., 'resnet50'.
+        outtoken (int): Number of output tokens.
+        hidden (int): Dimensionality of the hidden state.
+        enc_layers (int): Number of encoder layers in the transformer (default: 1).
+        dec_layers (int): Number of decoder layers in the transformer (default: 1).
+        nhead (int): Number of attention heads in the transformer (default: 1).
+        dropout (float): Dropout rate (default: 0.1).
+        pretrained (bool): Whether to use pretrained weights for the backbone model (default: False).
+    """
+
     def __init__(
         self,
-        bb_name,
-        outtoken,
-        hidden,
-        enc_layers=1,
-        dec_layers=1,
-        nhead=1,
-        dropout=0.1,
-        pretrained=False,
-    ):
-        # здесь загружаем сверточную модель, например, resnet50
+        bb_name: any,
+        outtoken: any,
+        hidden: any,
+        enc_layers: int = 1,
+        dec_layers: int = 1,
+        nhead: int = 1,
+        dropout: float = 0.1,
+        pretrained: bool = False,
+    ) -> any:
         super(TransformerModel, self).__init__()
         self.backbone = models.__getattribute__(bb_name)(pretrained=pretrained)
         self.backbone.fc = nn.Conv2d(2048, int(hidden / 2), 1)
@@ -76,15 +129,33 @@ class TransformerModel(nn.Module):
         print("dropout: {}".format(dropout))
         print(f"{count_parameters(self):,} trainable parameters")
 
-    def generate_square_subsequent_mask(self, sz):
+    def generate_square_subsequent_mask(self, sz: any) -> any:
+        """
+        Generate a square subsequent mask.
+
+        Args:
+            sz (int): Size of the mask.
+
+        Returns:
+            torch.Tensor: Square subsequent mask.
+        """
         mask = torch.triu(torch.ones(sz, sz), 1)
         mask = mask.masked_fill(mask == 1, float("-inf"))
         return mask
 
-    def make_len_mask(self, inp):
+    def make_len_mask(self, inp: any) -> any:
+        """
+        Make a length mask.
+
+        Args:
+            inp (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Length mask.
+        """
         return (inp == 0).transpose(0, 1)
 
-    def forward(self, src, trg):
+    def forward(self, src: any, trg: any) -> any:
         """
         params
         ---
@@ -92,6 +163,8 @@ class TransformerModel(nn.Module):
             B - batch, C - channel, H - height, W - width
         trg : Tensor [13, 64] : [L,B]
             L - max length of label
+        Returns:
+            torch.Tensor: Output tensor.
         """
         if self.trg_mask is None or self.trg_mask.size(0) != len(trg):
             self.trg_mask = self.generate_square_subsequent_mask(len(trg)).to(
@@ -105,19 +178,23 @@ class TransformerModel(nn.Module):
         x = self.backbone.layer1(x)
         x = self.backbone.layer2(x)
         x = self.backbone.layer3(x)
-        x = self.backbone.layer4(x)  # [64, 2048, 2, 8] : [B,C,H,W]
-
-        x = self.backbone.fc(x)  # [64, 256, 2, 8] : [B,C,H,W]
-        x = x.permute(0, 3, 1, 2)  # [64, 8, 256, 2] : [B,W,C,H]
-        x = x.flatten(2)  # [64, 8, 512] : [B,W,CH]
-        x = x.permute(1, 0, 2)  # [8, 64, 512] : [W,B,CH]
-
+        # [64, 2048, 2, 8] : [B,C,H,W]
+        x = self.backbone.layer4(x)
+        # [64, 256, 2, 8] : [B,C,H,W]
+        x = self.backbone.fc(x)
+        # [64, 8, 256, 2] : [B,W,C,H]
+        x = x.permute(0, 3, 1, 2)
+        # [64, 8, 512] : [B,W,CH]
+        x = x.flatten(2)
+        # [8, 64, 512] : [W,B,CH]
+        x = x.permute(1, 0, 2)
         src_pad_mask = self.make_len_mask(x[:, :, 0])
-        src = self.pos_encoder(x)  # [8, 64, 512]
+        # [8, 64, 512]
+        src = self.pos_encoder(x)
         trg_pad_mask = self.make_len_mask(trg)
         trg = self.decoder(trg)
         trg = self.pos_decoder(trg)
-
+        # [13, 64, 512] : [L,B,CH]
         output = self.transformer(
             src,
             trg,
@@ -127,8 +204,9 @@ class TransformerModel(nn.Module):
             src_key_padding_mask=src_pad_mask,
             tgt_key_padding_mask=trg_pad_mask,
             memory_key_padding_mask=src_pad_mask,
-        )  # [13, 64, 512] : [L,B,CH]
-        output = self.fc_out(output)  # [13, 64, 92] : [L,B,H]
+        )
+        # [13, 64, 92] : [L,B,H]
+        output = self.fc_out(output)
 
         return output
 
@@ -168,7 +246,7 @@ model.load_state_dict(
 )
 
 
-def process_image(img):
+def process_image(img: any) -> any:
     """
     params:
     ---
@@ -196,7 +274,7 @@ def process_image(img):
     return img
 
 
-def labels_to_text(s, idx2char):
+def labels_to_text(s: any, idx2char: any) -> any:
     """
     params
     ---
@@ -216,8 +294,19 @@ def labels_to_text(s, idx2char):
         return S[: S.find("EOS")]
 
 
-def prediction(model, test_dir, char2idx, idx2char):
-    preds = {}
+def prediction(model: any, test_dir: any, char2idx: any, idx2char: any) -> any:
+    """
+    Generate a prediction using the trained model.
+
+    Args:
+        model (nn.Module): Trained model.
+        test_dir (any): Directory of the test data.
+        char2idx (any): Mapping from characters to indices.
+        idx2char (any): Mapping from indices to characters.
+
+    Returns:
+        any: Predicted output.
+    """
     # os.makedirs("/output", exist_ok=True)
     model.eval()
 
@@ -229,11 +318,10 @@ def prediction(model, test_dir, char2idx, idx2char):
         img = img / img.max()
         img = np.transpose(img, (2, 0, 1))
         src = torch.FloatTensor(img).unsqueeze(0).to(dev)
-        p_values = 1
         out_indexes = [
             char2idx["SOS"],
         ]
-        for i in range(100):
+        for _ in range(100):
             trg_tensor = torch.LongTensor(out_indexes).unsqueeze(1).to(dev)
 
             output = model(src, trg_tensor)
@@ -246,7 +334,7 @@ def prediction(model, test_dir, char2idx, idx2char):
     return pred
 
 
-def char_error_rate(p_seq1, p_seq2):
+def char_error_rate(p_seq1: any, p_seq2: any) -> any:
     """
     params
     ---
@@ -265,7 +353,30 @@ def char_error_rate(p_seq1, p_seq2):
     )
 
 
-def test(model, image_dir, label_dir, char2idx, idx2char, case=True, punct=False):
+def test(
+    model: any,
+    image_dir: any,
+    label_dir: any,
+    char2idx: any,
+    idx2char: any,
+    case: bool = True,
+    punct: bool = False,
+) -> any:
+    """
+    Evaluate the performance of a model on a test dataset.
+
+    Args:
+        model (nn.Module): Trained model.
+        image_dir (any): Directory of the test images.
+        label_dir (any): Directory of the corresponding labels.
+        char2idx (any): Mapping from characters to indices.
+        idx2char (any): Mapping from indices to characters.
+        case (bool, optional): Flag indicating whether to consider case sensitivity. Defaults to True.
+        punct (bool, optional): Flag indicating whether to consider punctuation. Defaults to False.
+
+    Returns:
+        any: Tuple containing character accuracy and string accuracy.
+    """
     img2label = dict()
     raw = open(label_dir, "r", encoding="utf-8").read()
     temp = raw.split("\n")
@@ -321,12 +432,16 @@ def test(model, image_dir, label_dir, char2idx, idx2char, case=True, punct=False
     return character_accuracy, string_accuracy
 
 
-# word_accur, char_accur = test(
-#     model, PATH_TEST_DIR, PATH_TEST_LABELS, char2idx, idx2char, case=False, punct=False
-# )
-
-
 # print(word_accur, char_accur)
-def pred_with_image(image):
+def pred_with_image(image: any) -> any:
+    """
+    Generate a prediction for the given image.
+
+    Args:
+        image (any): Input image.
+
+    Returns:
+        any: Predicted label for the image.
+    """
     pred = prediction(model, image, char2idx, idx2char)
     return pred

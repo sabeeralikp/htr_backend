@@ -8,3 +8,4 @@ htr_api/__pycache__/
 htr_api/migrations/__pycache__/
 media/
 htr_api/model/
+htr_api/model

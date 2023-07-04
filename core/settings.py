@@ -1,5 +1,48 @@
+"""
+Module Name: settings.py
+
+This module contains the Django settings for the project.
+
+It includes configuration for various aspects of the project, such as:
+
+- Secret key used in production
+- Debug mode
+- Allowed hosts
+- Installed applications
+- Middleware settings
+- URL configuration
+- Template configuration
+- Database configuration
+- Password validation settings
+- Internationalization settings
+- Static files settings
+- Media files settings
+- Default primary key field type
+- REST framework configuration
+- CORS (Cross-Origin Resource Sharing) configuration
+
+Note: This module assumes the presence of the following packages:
+- `pathlib`
+- `os`
+- `dotenv`
+- `django`
+- `django.contrib.admin`
+- `django.contrib.auth`
+- `django.contrib.contenttypes`
+- `django.contrib.sessions`
+- `django.contrib.messages`
+- `django.contrib.staticfiles`
+- `htr`
+- `htr_api`
+- `rest_framework`
+- `corsheaders`
+
+"""
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,7 +52,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-rfks2o+#ozzr-&hhp5bgo%p!y=lq!25bv7iz@%pw72)0kaml&o"
+SECRET_KEY = str(os.getenv("SECRET_KEY"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

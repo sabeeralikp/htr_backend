@@ -7,8 +7,7 @@ import cv2
 from htr_api.autoSegment_utils import ratio, resize
 
 
-
-def detection(image):
+def detection(image: np.array) -> np.array:
     """Finding Page."""
     # Edge detection
     image_edges = _edges_detection(image, 200, 250)
@@ -16,7 +15,7 @@ def detection(image):
     # Close gaps between edges (double page clouse => rectangle kernel)
     closed_edges = cv2.morphologyEx(image_edges, cv2.MORPH_CLOSE, np.ones((5, 11)))
     # Countours
-    page_contour = _find_page_contours(closed_edges, resize(image))
+    page_contour = _find_page_contours(closed_edges)
     # Recalculate to original scale
     page_contour = page_contour.dot(ratio(image))
     # Transform prespective
@@ -24,7 +23,7 @@ def detection(image):
     return new_image
 
 
-def _edges_detection(img, minVal, maxVal):
+def _edges_detection(img: np.array, min_val: int, max_val: int) -> np.array:
     """Preprocessing (gray, thresh, filter, border) + Canny edge detection."""
     img = cv2.cvtColor(resize(img), cv2.COLOR_BGR2GRAY)
 
@@ -39,10 +38,10 @@ def _edges_detection(img, minVal, maxVal):
 
     # Add black border - detection of border touching pages
     img = cv2.copyMakeBorder(img, 5, 5, 5, 5, cv2.BORDER_CONSTANT, value=[0, 0, 0])
-    return cv2.Canny(img, minVal, maxVal)
+    return cv2.Canny(img, min_val, max_val)
 
 
-def _four_corners_sort(pts):
+def _four_corners_sort(pts: np.array) -> np.array:
     """Sort corners in order: top-left, bot-left, bot-right, top-right."""
     diff = np.diff(pts, axis=1)
     summ = pts.sum(axis=1)
@@ -56,18 +55,16 @@ def _four_corners_sort(pts):
     )
 
 
-def _contour_offset(cnt, offset):
+def _contour_offset(cnt: np.array, offset: any) -> np.array:
     """Offset contour because of 5px border."""
     cnt += offset
     cnt[cnt < 0] = 0
     return cnt
 
 
-def _find_page_contours(edges, img):
+def _find_page_contours(edges: np.array) -> np.array:
     """Finding corner points of page contour."""
-    contours, hierarchy = cv2.findContours(
-        edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-    )
+    contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # Finding biggest rectangle otherwise return original corners
     height = edges.shape[0]
@@ -98,7 +95,7 @@ def _find_page_contours(edges, img):
     return _contour_offset(page_contour, (-5, -5))
 
 
-def _persp_transform(img, s_points):
+def _persp_transform(img: np.array, s_points: np.array) -> np.array:
     """Transform perspective from start points to target points."""
     # Euclidean distance - calculate maximum height and width
     height = max(
