@@ -3,6 +3,7 @@ from htr.models import (
     HTR,
     AutoSegmentValue,
     ExportPDF,
+    FeedBackModel,
     ImageCordinate,
     SaveData,
     ThresholdValue,
@@ -116,3 +117,9 @@ class SaveDataSerializer(serializers.ModelSerializer):
         )
         list_serializer_class = SaveDataListSerialaizer
         model = SaveData
+
+
+class FeedBackSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ("upload_htr", "raiting", "remarks", "created_on", "created_by")
+        model = FeedBackModel

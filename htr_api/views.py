@@ -33,6 +33,7 @@ from htr_api.utils import (
 from .serializers import (
     AutoSegmentSerializer,
     ExportPDFSerializer,
+    FeedBackSerializer,
     HTRSerializer,
     ImageCordinateSerializer,
     SaveDataSerializer,
@@ -553,6 +554,44 @@ class ExportToDOCX(APIView):
             serializer.save()
             print(serializer.data["file"])
             convert_pdf_to_docx(serializer.data["file"])
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FeedBackView(APIView):
+    """
+    A view for exporting to DOCX format.
+
+    Inherits from `APIView` class provided by the Django REST framework.
+
+    Attributes:
+        permission_classes (list): A list of permission classes applied to the view.
+
+    Usage:
+        This class can be used to gather feedback from by sending a POST request.
+
+    Example:
+        To gather feedback:
+        ```
+        POST /feedback/
+        Request Body:
+        {
+            "raiting": <float>
+            "remarks": <string>
+        }
+        ```
+
+    Note: Adjust the attribute descriptions and example based on the actual implementation and requirements.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request: any, format: any = None) -> any:
+        print(request.data)
+        serializer = FeedBackSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)

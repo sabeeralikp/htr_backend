@@ -295,6 +295,42 @@ class ExportPDF(models.Model):
         return self.x
 
 
+class FeedBackModel(models.Model):
+    """
+    Model representing an Feedback from a user.
+
+    This model stores information about Feedback from a user as raiting and remarks.
+
+    Attributes:
+    - upload_htr: A foreign key to the UploadHTR model representing the associated upload (required).
+    - raiting: A raiting from the user.
+    - remarks: A remark from the user.
+    - created_on: A DateTimeField indicating the timestamp of creation (default: current datetime).
+    - created_by: A foreign key to the User model representing the user who created the image coordinates (nullable).
+
+    Methods:
+    - __str__: Returns a string representation of the ExportPDF instance (the x-coordinate).
+
+    Note:
+    This class assumes the presence of the following packages and modules:
+    - `django.db.models.Model`
+    - `django.contrib.auth.models.User`
+    - `django.db.models.FloatField`
+    - `django.db.models.ForeignKey`
+    - `django.db.models.DateTimeField`
+    - `UploadHTR`: The model class representing the associated upload (imported from the appropriate module).
+    """
+
+    upload_htr = models.ForeignKey(UploadHTR, on_delete=models.CASCADE)
+    raiting = models.FloatField(null=True)
+    remarks = models.TextField(blank=True)
+    created_on = models.DateTimeField(default=datetime.datetime.now)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+    def __str__(self) -> str:
+        return self.upload_htr
+
+
 class HTR(models.Model):
     """
     Model representing an HTR (Handwritten Text Recognition) entity.

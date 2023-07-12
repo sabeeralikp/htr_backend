@@ -20,6 +20,7 @@ from .views import (
     ExportToDOCX,
     Extract,
     CreateHTR,
+    FeedBackView,
     SaveData,
     Threshold,
 )
@@ -34,4 +35,5 @@ urlpatterns = [
     path("document/extract", Extract.as_view(), name="extract"),
     path("document/saveData", SaveData.as_view(), name="saveData"),
     path("document/exportDoc", ExportToDOCX.as_view(), name="exportDoc"),
+    path("document/feedback", FeedBackView.as_view(), name="feedback"),
 ]
