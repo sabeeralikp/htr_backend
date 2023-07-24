@@ -179,6 +179,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://*",
     "https://*",
     "http://192.168.16.54",
+    "http://127.0.0.1:5500",
+    "http://192.168.8.110:4001",
 ]
 
 # hyxciwfdqfzxpage
