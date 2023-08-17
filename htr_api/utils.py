@@ -45,6 +45,31 @@ def pdf_to_images(pdf_file: any) -> any:
     return images
 
 
+def pdf_to_images_OCR(pdf_file: any, filename: str) -> any:
+    """
+    Converts a PDF file into a list of images.
+
+    Args:
+        pdf_file: The PDF file to be converted.
+
+    Returns:
+        A list of images extracted from the PDF file.
+    """
+    images = convert_from_bytes(pdf_file)
+    for i in range(len(images)):
+        try:
+            mkdir(f"documents/pdf2image/{filename}")
+        except:
+            pass
+        cv2.imwrite(f"documents/pdf2image/{filename}/{i}.png", np.array(images[i]))
+    return images
+
+
+def get_image_from_path(filename: str) -> any:
+    image = cv2.imread(filename)
+    return image
+
+
 def get_threshold_image(image: any, threshold: any) -> any:
     """
     Applies thresholding to an input image.
@@ -108,6 +133,7 @@ def save_image_from_in_memory_image(image: any, filename: any, file_type: any) -
     cv2.imwrite(
         f"media/pdf2img/{filename.strip(f'.{file_type}')}/{0}.png", np.array(image)
     )
+    return image
 
 
 def threshold_value(

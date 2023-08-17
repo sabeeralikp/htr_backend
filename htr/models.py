@@ -105,8 +105,21 @@ class UploadHTR(models.Model):
 
     filename = models.CharField(max_length=250)
     file = models.FileField(_("File"), upload_to=upload_to)
-    file_type = models.TextField(blank=True)
+    file_type = models.TextField(blank=True, null=True)
     number_of_pages = models.IntegerField(null=True)
+    uploaded_on = models.DateTimeField(default=datetime.datetime.now)
+    uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+
+    def __str__(self) -> str:
+        return self.filename
+
+
+class UploadOCRModel(models.Model):
+    filename = models.CharField(max_length=250)
+    file = models.FileField(_("File"), upload_to=upload_to)
+    file_type = models.TextField(blank=True, null=True)
+    number_of_pages = models.IntegerField(null=True)
+    predicted_text = models.TextField(blank=True, null=True)
     uploaded_on = models.DateTimeField(default=datetime.datetime.now)
     uploaded_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
 
@@ -323,7 +336,7 @@ class FeedBackModel(models.Model):
 
     upload_htr = models.ForeignKey(UploadHTR, on_delete=models.CASCADE)
     raiting = models.FloatField(null=True)
-    remarks = models.TextField(blank=True)
+    remarks = models.TextField(blank=True, null=True)
     created_on = models.DateTimeField(default=datetime.datetime.now)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
@@ -366,7 +379,7 @@ class HTR(models.Model):
 
     filename = models.CharField(max_length=250)
     file = models.FileField(_("File"), upload_to=upload_to)
-    extracted_text = models.TextField(blank=True)
+    extracted_text = models.TextField(blank=True, null=True)
     threshold_value = models.IntegerField(null=True)
     dilate_x_value = models.IntegerField(null=True)
     dilate_y_value = models.IntegerField(null=True)
