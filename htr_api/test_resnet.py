@@ -217,7 +217,7 @@ PATH_TEST_LABELS = "words/val.csv"
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 cyrillic = ["EOS"]
-s = ".ംഃഅആഇഈഉഊഋഎഏഐഒഓഔകഖഗഘങചഛജഝഞടഠഡഢണതഥദധനപഫബഭമയരറലളഴവശഷസഹാിീുൂൃെേൈൊോ്ൗൺൻർൽൾ"
+s = "ംഃഅആഇഈഉഊഋഎഏഐഒഓഔകഖഗഘങചഛജഝഞടഠഡഢണതഥദധനപഫബഭമയരറലളഴവശഷസഹാിീുൂൃെേൈൊോ്ൗൺൻർൽൾ"
 cyrillic[:0] = s
 cyrillic.insert(0, "SOS")
 cyrillic.insert(0, "PAD")
@@ -241,9 +241,7 @@ model = TransformerModel(
     dropout=dropout,
 ).to(dev)
 
-model.load_state_dict(
-    torch.load("htr_api/model/0.26470837907215855.pth", map_location=dev)
-)
+model.load_state_dict(torch.load("htr_api/model/BestModel.pth", map_location=dev))
 
 
 def process_image(img: any) -> any:
