@@ -21,8 +21,10 @@ from .views import (
     Extract,
     CreateHTR,
     FeedBackView,
+    OCRPDFView,
     SaveData,
     Threshold,
+    UploadOCRView,
 )
 
 app_name = "htr_api"
@@ -30,6 +32,8 @@ app_name = "htr_api"
 urlpatterns = [
     path("document/post", CreateHTR.as_view(), name="postdocument"),
     path("document/postHTR", PDF2IMG.as_view(), name="postHTRdocument"),
+    path("document/upload", UploadOCRView.as_view(), name="upload"),
+    path("document/extract_pdf", OCRPDFView.as_view(), name="extract"),
     path("document/threshold", Threshold.as_view(), name="threshold"),
     path("document/autoSegment", AutoSegment.as_view(), name="autoSegment"),
     path("document/extract", Extract.as_view(), name="extract"),
