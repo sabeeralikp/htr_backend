@@ -168,19 +168,7 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:42955",
-    "http://192.168.64.225",
-    "http://192.168.65.169",
-    "http://192.168.65.35",
-    "http://192.168.64.177",
-    "http://192.168.64.185",
-    "http://localhost:44193",
-    "http://*",
-    "https://*",
-    "http://192.168.16.54",
-    "http://127.0.0.1:5500",
-    "http://192.168.8.110:4001",
-]
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = []
 
 # hyxciwfdqfzxpage
