@@ -56,12 +56,14 @@ def pdf_to_images_OCR(pdf_file: any, filename: str) -> any:
         A list of images extracted from the PDF file.
     """
     images = convert_from_bytes(pdf_file)
+    try:
+        mkdir(f"media/pdf2img/{filename.strip('.pdf')}")
+    except OSError as e:
+        print("Couldn't create folder", e)
     for i in range(len(images)):
-        try:
-            mkdir(f"media/pdf2image/{filename}")
-        except:
-            pass
-        cv2.imwrite(f"media/pdf2image/{filename}/{i}.png", np.array(images[i]))
+        cv2.imwrite(
+            f"media/pdf2img/{filename.strip('.pdf')}/{i}.png", np.array(images[i])
+        )
     return images
 
 
