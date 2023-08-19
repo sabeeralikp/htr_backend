@@ -58,10 +58,10 @@ def pdf_to_images_OCR(pdf_file: any, filename: str) -> any:
     images = convert_from_bytes(pdf_file)
     for i in range(len(images)):
         try:
-            mkdir(f"documents/pdf2image/{filename}")
+            mkdir(f"media/pdf2image/{filename}")
         except:
             pass
-        cv2.imwrite(f"documents/pdf2image/{filename}/{i}.png", np.array(images[i]))
+        cv2.imwrite(f"media/pdf2image/{filename}/{i}.png", np.array(images[i]))
     return images
 
 
