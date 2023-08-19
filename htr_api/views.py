@@ -256,7 +256,7 @@ class OCRPDFView(APIView):
             ocr = UploadOCRModel.objects.filter(id=request.data["upload_ocr_id"])
             if ocr != []:
                 image = get_image_from_path(
-                    f'documents/pdf2image/{ocr[0].filename.strip(".pdf")}/{request.data["page_number"]}.png'
+                    f'media/pdf2image/{ocr[0].filename.strip(".pdf")}/{request.data["page_number"]}.png'
                 )
                 text = image_to_string(image, lang="eng+mal")
                 return Response({"text": str(text)}, status=status.HTTP_200_OK)
