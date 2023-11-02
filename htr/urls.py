@@ -31,4 +31,5 @@ app_name = "htr"
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="htr/index.html")),
+    path("privacypolicy", TemplateView.as_view(template_name="htr/privacypolicy.html")),
 ]
